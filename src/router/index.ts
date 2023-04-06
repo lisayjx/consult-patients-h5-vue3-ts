@@ -13,9 +13,24 @@ import { createRouter, createWebHistory } from 'vue-router'
 // 如何设置路由模式？createWebHistory() 或者 createWebHashHistory()
 // import.meta.env.BASE_URL 值来自哪里？vite.config.ts 的 base 属性的值
 // base 作用是什么?项目的基础路径前缀，默认是 /
+
+// vue2的路由
+// 1.import VueRouter from 'vue-router'
+// 2.const router=new  VueRouter({routes:[//路由规则]})
+// 3.选择路由模式 hash /#/user ，history  /user
+
+// vue3的路由
+// 1.创建路由实例 createRouter({//配置对象})
+// 2.配置选项中 routes:[//路由规则]
+// 3.createWebHistory 使用路由history模式，createWebHashHistory使用路由hash模式
+// 4.里面的参数 import.meta.env.BASE_URL是路由基准路径，是由create-vue脚手架提供的数据（环境变量）在vite.config里的base配置
+// 5.baseUrl是在你请求的接口前加固定的路径，这个是在路由前加固定的路径
+// 切换路径时候路由改变 组件  回退时地址栏和组件改变
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: []
+  history: createWebHistory(import.meta.env.BASE_URL), //此时是 /
+  routes: [
+    { path: '/login', component: () => import('@/views/Login/index.vue') }
+  ]
 })
 
 export default router

@@ -1,11 +1,8 @@
-<script setup lang="ts">
-import { Button as VanButton } from 'vant'
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>
-    <van-button type="primary">按钮</van-button>
-  </div>
+  <!-- app组件路由出口 -->
+  <router-view></router-view>
 </template>
 
 <style scoped></style>
