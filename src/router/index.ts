@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+// 进度条
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
 // createRouter 创建路由实例，===> new VueRouter()
 // history 是路由模式，hash模式，history模式
 // createWebHistory() 是开启history模块   http://xxx/user
@@ -29,8 +32,75 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL), //此时是 /
   routes: [
-    { path: '/login', component: () => import('@/views/Login/index.vue') }
+    { path: '/login', component: () => import('@/views/Login/index.vue') },
+    // 布局容器 一级路由
+    {
+      path: '/',
+      component: () => import('@/views/Layout.vue'),
+      // 二级路由
+      children: [
+        {
+          path: '/home',
+          component: () => import('@/views/Home/index.vue'),
+          meta: { title: '首页' }
+        },
+        {
+          path: '/article',
+          component: () => import('@/views/Article/index.vue'),
+          meta: { title: '健康百科' }
+        },
+        {
+          path: '/notify',
+          component: () => import('@/views/Notify/index.vue'),
+          meta: { title: '消息通知' }
+        },
+        {
+          path: '/user',
+          component: () => import('@/views/User/index.vue'),
+          meta: { title: '个人中心' }
+        },
+        {
+          path: '/user/patient',
+          component: () => import('@/views/User/PatientPage.vue'),
+          meta: { title: '家庭档案' }
+        }
+      ]
+    }
   ]
 })
 
+// 路由前置导航守卫 --访问权限控制
+// 与vue2区别
+// v2:三个参数 to from next
+// vue3 没有next
+// 如果·return true或啥也不写·就是放行拦截到某个页面
+// return'路由地址"
+
+// 如果未登录 不可以访问 home/articles/notify
+// 如果没有token，判断是不是白名单，是白名单可以放行，不是就跳转到登陆页
+// 如果有token 放行
+import { useUserStore } from '@/stores'
+
+router.beforeEach((to, from) => {
+  // 切换路由前开启 进度条
+  NProgress.start()
+
+  const store = useUserStore()
+  // 白名单：不需要登陆可以去的页面
+  const whiteList = ['/login', '/register']
+  // includes可以判断前面的数组中是否包含后面的某项
+  if (!store.user?.token && !whiteList.includes(to.path)) return '/login'
+  // 否则不做处理
+})
+
+// 后置 路由守卫 -路由切换完毕后关闭进度条
+router.afterEach((to) => {
+  // 处理路由页的标题
+  document.title = `医生在线-${to.meta.title}`
+  NProgress.done()
+})
+// showSpinner用来控制是否显示进度条右下方加载的小圆圈动画
+// 通过将加载微调器设置为 false 来关闭它。（默认值：true)
+NProgress.configure({ showSpinner: false })
+// 路由 前置和后置 守卫 就是：路由切换前和路由切换完后 干啥
 export default router

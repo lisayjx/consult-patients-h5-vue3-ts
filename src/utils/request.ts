@@ -10,6 +10,12 @@ import router from '@/router'
 import { useUserStore } from '@/stores'
 import { showToast } from 'vant'
 import type { User } from '@/types/user'
+// 进度条
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+// showSpinner用来控制是否显示进度条右下方加载的小圆圈动画
+// 通过将加载微调器设置为 false 来关闭它。（默认值：true)
+NProgress.configure({ showSpinner: false })
 
 // 1.axios配置
 // 1.1创建一个新的axios实例，配置基准地址，响应超时时间
@@ -24,6 +30,7 @@ const instance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
   (config) => {
+    NProgress.start() //进度条
     // TODO 2. 携带token
     const store = useUserStore() //写在了拦截器里面，在这里面写 就是发请求时候再使用pinia已经安装好了
     // 类型守卫
@@ -42,6 +49,7 @@ instance.interceptors.request.use(
 // .catch(e=>{200+10001 业务逻辑错误清空，e是res.data 然后可以根据code做不同错误情况的业务，如果是状态码401 402 403e就是错误对象})
 instance.interceptors.response.use(
   (res) => {
+    NProgress.done()
     // TODO 3.处理业务失败
     // status是200是响应成功的，res.data.code是10000代表业务成功（没有用户名密码错误啥的）
     // 如果不是10000就要用vant的轻提示 提示用户哪里的逻辑错误，报错阻断程序
@@ -55,6 +63,7 @@ instance.interceptors.response.use(
     return res.data
   },
   (err) => {
+    NProgress.done()
     // TODO 5.处理状态码401错误
     //遇见401跳转到登录页，删除用户信息
     // 1，现在在/user/patient 页面下，发起一个获取用户信息的请求，但是此时token失效

@@ -11,6 +11,9 @@ import { VantResolver } from 'unplugin-vue-components/resolvers' //各种组件�
 //   AntDesignVueResolver,
 //   VueUseComponentsResolver
 // } from 'unplugin-vue-components/resolvers' //各种组件库的解析器
+// 打包svg图标精灵地图
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,6 +26,10 @@ export default defineConfig({
       dts: false, //默认是true自动生成类型声明文件,vant的组件已经有类型声明文件，只要导入了就会使用类型声明。
       // importStyle: false原因 ：我们在main已经自动导入样式了，所以只需要自动导入组件即可
       resolvers: [VantResolver({ importStyle: false })]
+    }),
+    createSvgIconsPlugin({
+      // 指定图标文件夹，绝对路径（NODE代码）
+      iconDirs: [path.resolve(process.cwd(), 'src/icons')]
     })
   ],
   resolve: {
