@@ -11,7 +11,8 @@ import './style/main.scss'
 import 'virtual:svg-icons-register'
 // 引入动画库
 import 'animate.css'
-
+// 引入枚举
+import '@/enums'
 const app = createApp(App)
 
 app.use(pinia)

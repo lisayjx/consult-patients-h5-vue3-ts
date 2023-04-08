@@ -15,3 +15,4 @@ export default pinia
 
 // 简写
 export * from './user'
+export * from './modules/consult'

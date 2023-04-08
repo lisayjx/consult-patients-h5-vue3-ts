@@ -9,6 +9,10 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const onClickLeft = () => {
   // TODO 点击左侧返回按钮
+  // 如果有back 属性，就执行 back 对应的函数。
+  if (props.back) {
+    return props.back()
+  }
   //   如果有上一页历史就可以返回，如果没有就跳转到首页
   if (history.state?.back) {
     //判断历史记录中是否有回退
@@ -18,9 +22,10 @@ const onClickLeft = () => {
   }
 }
 // 2.暴露props，title设置标题，rightText设置右侧文字
-defineProps<{
+const props = defineProps<{
   title?: string
   rightText?: string
+  back?: () => void
 }>()
 
 // 3.点击右侧文字按钮，要做的事情无法确定，触发自定义事件通知父组件

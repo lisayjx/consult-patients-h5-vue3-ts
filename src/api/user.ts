@@ -1,6 +1,6 @@
 // 用户接口
 import { request } from '@/utils/request'
-import type { User, CodeType, UserInfo, PatientList } from '@/types/user' //User类型，返回的数据的类型
+import type { User, CodeType, UserInfo, Patient } from '@/types/user' //User类型，返回的数据的类型
 
 // 1.密码登录
 export const loginByPassword = (mobile: string, password: string) =>
@@ -15,5 +15,13 @@ export const loginByMobile = (mobile: string, code: string) =>
 // 4.获取个人信息
 export const getUserInfo = () => request<UserInfo>('/patient/myUser', 'get')
 // 5.家庭档案-病人信息列表-查询患者列表信息
-export const getPatientList = () =>
-  request<PatientList>('/patient/mylist', 'get')
+export const getPatientList = () => request<Patient[]>('/patient/mylist', 'get')
+// 6.添加患者信息
+export const addPatient = (patient: Patient) =>
+  request('/patient/add', 'POST', patient)
+// 7.编辑患者信息
+export const editPatient = (patient: Patient) =>
+  request('/patient/update', 'PUT', patient)
+// 8.删除患者信息
+export const delPatient = (id: string) =>
+  request(`/patient/del/${id}`, 'DELETE')
