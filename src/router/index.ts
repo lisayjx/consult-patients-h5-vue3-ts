@@ -58,13 +58,13 @@ const router = createRouter({
           path: '/user',
           component: () => import('@/views/User/index.vue'),
           meta: { title: '个人中心' }
-        },
-        {
-          path: '/user/patient',
-          component: () => import('@/views/User/PatientPage.vue'),
-          meta: { title: '家庭档案' }
         }
       ]
+    },
+    {
+      path: '/user/patient',
+      component: () => import('@/views/User/PatientPage.vue'),
+      meta: { title: '家庭档案' }
     },
     // 极速问诊
     {
@@ -81,6 +81,16 @@ const router = createRouter({
       path: '/consult/illness',
       component: () => import('@/views/Consult/ConsultIllness.vue'),
       meta: { title: '病情描述' }
+    },
+    {
+      path: '/consult/pay',
+      component: () => import('@/views/Consult/ConsultPay.vue'),
+      meta: { title: '问诊支付' }
+    },
+    {
+      path: '/room',
+      component: () => import('@/views/Room/index.vue'),
+      meta: { title: '问诊室' }
     }
   ]
 })

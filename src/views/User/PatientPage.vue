@@ -7,13 +7,18 @@ import {
   showConfirmDialog,
   showFailToast,
   showSuccessToast,
+  showToast,
   type FormInstance
 } from 'vant'
+import { useRoute, useRouter } from 'vue-router'
+import { useConsultStore } from '@/stores'
 // 1. 页面初始化加载数据
 const patientList = ref<Patient[]>([])
 const loadList = async () => {
   const res = await getPatientList()
   patientList.value = res.data
+  // 设置默认选中
+  changeDefaultPatient()
 }
 onMounted(() => {
   loadList()
@@ -89,7 +94,7 @@ const submit = async () => {
   showSuccessToast(patient.value.id ? '编辑成功' : '添加成功')
 }
 
-// 点击删除患者信息
+//6. 点击删除患者信息
 const deleteBtn = async () => {
   await showConfirmDialog({
     title: '温馨提示',
@@ -100,13 +105,60 @@ const deleteBtn = async () => {
   loadList()
   showSuccessToast('删除成功')
 }
+
+// 7.由病情描述页面是否传来的isChange来区别 此页面是家庭档案页还是选择患者页
+// 1.界面兼容
+const route = useRoute()
+const isChange = computed(() => {
+  return route.query.isChange === '1'
+})
+// 2.点击效果，选择患者
+const patientId = ref<string>() //患者id
+const selectPatient = (item: Patient) => {
+  if (isChange.value) {
+    //如果是选择页面才会做 记录id
+    patientId.value = item.id
+  }
+}
+// 3.默认选中，有默认就诊人选他，没有就选第一个
+// 在上面1页面上初始化里面
+const changeDefaultPatient = () => {
+  // 设置默认选中的ID，当你是选择患者的时候，且有患者信息的时候
+  if (isChange.value && patientList.value.length) {
+    // 从病人列表里找到默认的那项数据
+    const defPatient = patientList.value.find((item) => item.defaultFlag === 1)
+    // 如果找到了此人 就把此人id赋值给 patientId（默认选中的人的id）
+    // 如果没找到默认的人，就把第一个人设置为默认
+    if (defPatient) patientId.value = defPatient.id
+    else patientId.value = patientList.value[0].id
+  }
+}
+// 4.下一步，一定需要选中患者，存储就诊患者store，记录患者ID跳转支付页面
+const store = useConsultStore()
+const router = useRouter()
+const next = () => {
+  if (!patientId.value) return showToast('请选择就诊患者')
+  store.setPatient(patientId.value)
+  router.push('/consult/pay')
+}
 </script>
 
 <template>
   <div class="patient-page">
-    <cp-nav-bar title="家庭档案"></cp-nav-bar>
+    <cp-nav-bar :title="isChange ? '选择患者' : '家庭档案'"></cp-nav-bar>
     <div class="patient-list">
-      <div class="patient-item" v-for="item in patientList" :key="item.id">
+      <!-- 头部提示 -->
+      <div class="patient-change" v-if="isChange">
+        <h3>请选择患者信息</h3>
+        <p>以便医生给出更准确的治疗，信息仅医生可见</p>
+      </div>
+      <div
+        class="patient-item"
+        @click="selectPatient(item)"
+        :class="{ selected: item.id === patientId }"
+        v-for="item in patientList"
+        :key="item.id"
+      >
         <div class="info">
           <span class="name">{{ item.name }}</span>
           <span class="id">{{
@@ -132,7 +184,10 @@ const deleteBtn = async () => {
       </div>
       <div class="patient-tip">最多可添加 6 人</div>
     </div>
-
+    <!-- 底部按钮 -->
+    <div class="patient-next" v-if="isChange">
+      <van-button type="primary" @click="next" round block>下一步</van-button>
+    </div>
     <!-- 侧边栏 -->
     <van-popup v-model:show="showRight" position="right">
       <!-- 头部 -->
@@ -249,6 +304,7 @@ const deleteBtn = async () => {
     align-items: center;
   }
   &.selected {
+    //选中效果
     border-color: var(--cp-primary);
     background-color: var(--cp-plain);
     .icon {
@@ -282,5 +338,25 @@ const deleteBtn = async () => {
     color: var(--cp-price);
     background-color: var(--cp-bg);
   }
+}
+.patient-change {
+  padding: 15px;
+  > h3 {
+    font-weight: normal;
+    margin-bottom: 5px;
+  }
+  > p {
+    color: var(--cp-text3);
+  }
+}
+.patient-next {
+  padding: 15px;
+  background-color: #fff;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 80px;
+  box-sizing: border-box;
 }
 </style>
