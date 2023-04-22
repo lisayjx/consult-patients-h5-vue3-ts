@@ -60,15 +60,16 @@ export type EvaluateDoc = {
 }
 
 export type Message = {
+  // 写上这种注释 鼠标放在数据上 会显示这个注释 会有提示
   /** 消息ID */
   id: string
   /** 消息类型 */
   msgType: MsgType
-  /** 发信人 */
+  /** 发信人 id*/
   from?: string
-  /** 发信人ID */
+  /** 发信人头像 */
   fromAvatar?: string
-  /** 收信人 */
+  /** 收信人 id*/
   to?: string
   /** 收信人头像 */
   toAvatar?: string
@@ -89,6 +90,7 @@ export type Message = {
     /** 评价信息 */
     evaluateDoc?: EvaluateDoc
   }
+  notScroll?: boolean //是否需要滚动
 }
 
 // 消息分组列表

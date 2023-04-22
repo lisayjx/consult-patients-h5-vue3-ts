@@ -1,4 +1,3 @@
-import type { ConsultType } from '@/enums'
 import type {
   DoctorPage,
   FollowType,
@@ -9,7 +8,10 @@ import type {
   Image,
   ConsultOrderPreParams,
   ConsultOrderPreData,
-  PartialConsult
+  PartialConsult,
+  ConsultOrderItem,
+  ConsultOrderListParams,
+  ConsultOrderPage
 } from '@/types/consult'
 import { request } from '@/utils/request'
 
@@ -23,7 +25,7 @@ export const getDoctorPage = (params: PageParams) =>
 export const followOrUnfollow = (id: string, type: FollowType) =>
   request('/like', 'POST', { id, type })
 // 获取全部科室
-export const getAllDep = () => request<TopDep>('/dep/all', 'get')
+export const getAllDep = () => request<TopDep[]>('/dep/all', 'get')
 // 上传图片
 export const uploadImage = (file: File) => {
   const fb = new FormData()
@@ -44,3 +46,26 @@ export const getConsultOrderPayUrl = (params: {
   orderId: string
   payCallback: string
 }) => request<{ payUrl: string }>('/patient/consult/pay', 'POST', params)
+// 问诊室-查询问诊订单详情
+export const getConsultOrderDetail = (orderId: string) =>
+  request<ConsultOrderItem>('/patient/consult/order/detail', 'GET', { orderId })
+// 查看处方 图片
+export const getPrescriptionPic = (id: string) =>
+  request<{ url: string }>(`/patient/consult/prescription/${id}`, 'get')
+// 提交问诊评价
+export const evaluateConsultOrder = (data: {
+  docId: string
+  orderId: string
+  score: number
+  content: string
+  anonymousFlag: 0 | 1
+}) => request<{ id: string }>('/patient/order/evaluate', 'POST', data)
+// 订单列表
+export const getConsultOrderList = (params: ConsultOrderListParams) =>
+  request<ConsultOrderPage>('/patient/consult/order/list', 'GET', params)
+// 取消订单
+export const cancelOrder = (id: string) =>
+  request(`/patient/order/cancel/${id}`, 'PUT')
+// 删除订单
+export const deleteOrder = (id: string) =>
+  request(`/patient/order/${id}`, 'DELETE')

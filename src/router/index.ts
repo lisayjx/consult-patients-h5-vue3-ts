@@ -90,7 +90,47 @@ const router = createRouter({
     {
       path: '/room',
       component: () => import('@/views/Room/index.vue'),
-      meta: { title: '问诊室' }
+      meta: { title: '问诊室' },
+      // 进入路由前做一个支付结果的判断
+      // 为了处理 支付失败后的情况 要直接跳转到 问诊订单页
+      beforeEnter(to) {
+        if (to.query.payResult === 'false') return '/user/consult'
+      }
+    },
+    {
+      path: '/user/consult',
+      component: () => import('@/views/User/ConsultPage.vue'),
+      meta: { title: '问诊记录' }
+    },
+    {
+      path: '/user/consult/:id',
+      component: () => import('@/views/User/ConsultDetail.vue'),
+      meta: { title: '问诊详情' }
+    },
+    {
+      path: '/order/pay',
+      component: () => import('@/views/Order/OrderPay.vue'),
+      meta: { title: '药品支付' }
+    },
+    {
+      path: '/order/pay/result',
+      component: () => import('@/views/Order/OrderPayResult.vue'),
+      meta: { title: '药品支付结果' }
+    },
+    {
+      path: '/order/:id',
+      component: () => import('@/views/Order/OrderDetail.vue'),
+      meta: { title: '药品订单详情' }
+    },
+    {
+      path: '/order/logistics/:id',
+      component: () => import('@/views/Order/OrderLogistics.vue'),
+      meta: { title: '物流详情' }
+    },
+    {
+      path: '/login/callback',
+      component: () => import('@/views/Login/CallbackLogin.vue'),
+      meta: { title: 'QQ登录-绑定手机' }
     }
   ]
 })
@@ -107,13 +147,13 @@ const router = createRouter({
 // 如果有token 放行
 import { useUserStore } from '@/stores'
 
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
   // 切换路由前开启 进度条
   NProgress.start()
 
   const store = useUserStore()
   // 白名单：不需要登陆可以去的页面
-  const whiteList = ['/login', '/register']
+  const whiteList = ['/login', '/login/callback']
   // includes可以判断前面的数组中是否包含后面的某项
   if (!store.user?.token && !whiteList.includes(to.path)) return '/login'
   // 否则不做处理

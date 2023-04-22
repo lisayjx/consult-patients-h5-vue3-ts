@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { getUserInfo } from '@/api/user'
+import { getUserInfo, unBindMobile } from '@/api/user'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import type { UserInfo } from '@/types/user'
-import { showConfirmDialog } from 'vant'
+import { showConfirmDialog, showToast } from 'vant'
 import { onMounted, ref } from 'vue'
 // 获取用户个人信息
 const user = ref<UserInfo>()
@@ -38,6 +38,14 @@ const layout = () => {
       router.push('/login')
     })
     .catch(() => {})
+}
+
+// 解除绑定手机号
+const handleUnBindMobile = async () => {
+  await unBindMobile(user.value?.mobile!)
+  showToast('解除绑定成功')
+  router.replace('/login')
+  store.setUser(undefined)
 }
 </script>
 
@@ -118,6 +126,9 @@ const layout = () => {
         @click="$router.push(item.path)"
       >
         <template #icon><cp-icon :name="`user-tool-0${i + 1}`" /></template>
+      </van-cell>
+      <van-cell title="解除绑定" @click="handleUnBindMobile" is-link>
+        <template #icon><cp-icon name="user-tool-07" /></template>
       </van-cell>
     </div>
     <!-- 退出登录 -->

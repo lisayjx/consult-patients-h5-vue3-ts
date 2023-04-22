@@ -28,3 +28,15 @@ export const delPatient = (id: string) =>
 // 9.查询患者详情
 export const getPatientDetail = (id: string) =>
   request<Patient>(`/patient/info/${id}`, 'get')
+// 10.qq登录获取 用户信息
+export const loginByQQ = (openId: string) =>
+  request<User>('/login/thirdparty', 'POST', { openId, source: 'qq' })
+// 11.绑定手机
+export const bindMobile = (data: {
+  mobile: string
+  code: string
+  openId: string
+}) => request<User>('/login/binding', 'POST', data)
+// 12.解除绑定手机号
+export const unBindMobile = (userInfo: string) =>
+  request(`/unbound/${userInfo}`, 'put')

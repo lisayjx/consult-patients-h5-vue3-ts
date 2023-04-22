@@ -31,7 +31,7 @@ export const useConsultStore = defineStore(
     // 2.修改极速问诊类型函数
     const setIllnessType = (type: 0 | 1) => (consult.value.illnessType = type)
     // 3.修改科室函数
-    const setDep = (id: string) => (consult.value.depId = id)
+    const setDep = (id: string | undefined) => (consult.value.depId = id)
     // 4.修改病情描述函数
     const setIllness = (
       illness: Pick<

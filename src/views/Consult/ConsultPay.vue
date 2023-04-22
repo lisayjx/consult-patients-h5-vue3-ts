@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import {
-  createConsultOrder,
-  getConsultOrderPayUrl,
-  getConsultOrderPre
-} from '@/api/consult'
+import { createConsultOrder, getConsultOrderPre } from '@/api/consult'
 import { getPatientDetail } from '@/api/user'
 import { useConsultStore } from '@/stores'
 import type { ConsultOrderPreData, PartialConsult } from '@/types/consult'
 import type { Patient } from '@/types/user'
-import {
-  showConfirmDialog,
-  showDialog,
-  showLoadingToast,
-  showToast
-} from 'vant'
+import { showConfirmDialog, showDialog } from 'vant'
 import { onMounted, ref } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
@@ -49,7 +40,7 @@ const show = ref(false)
 const shakeX = ref(false) //控制 勾选协议是否加抖动动画
 const orderId = ref<string>()
 // 支付方式
-const paymentMethod = ref<0 | 1>()
+// const paymentMethod = ref<0 | 1>()
 const onSubmit = async () => {
   if (!agree.value) {
     shakeX.value = false //去除动画样式 为了每次都新加上动画
@@ -109,35 +100,35 @@ onBeforeRouteLeave(() => {
   if (orderId.value) return false
 })
 
-// 点击立即支付
-const gotoPay = async () => {
-  // 调用接口,获取后端传来的支付地址
-  // 写undefined是因为微信支付是0,如果写成!paymentMethod.value有可能 也符合
-  if (paymentMethod.value === undefined) return showToast('请选择支付方式')
-  if (orderId.value) {
-    showLoadingToast('支付中..')
-    //  自测时，传值：http://localhost:端口号/+回调页面，
-    // vue版本测试环境，传值：http://测试环境域名/+回调页面，
-    // 用于决定付款成功后，回调地址是本地还是测试环境地址
-    const res = await getConsultOrderPayUrl({
-      paymentMethod: paymentMethod.value,
-      orderId: orderId.value,
-      payCallback: 'http://localhost:5173/room'
-    })
-    // 请求接口成功后,后端给我们一个支付地址,不是我们自己的路由页面,所以用window.location.href
-    window.location.href = res.data.payUrl
-    // 买家账号：jfjbwb4477@sandbox.com
-    // 登录密码：111111
-    // 支付密码：111111
-  }
-}
+// // 点击立即支付(支付抽屉 组件抽取到了 CpPaySheet)
+// const gotoPay = async () => {
+//   // 调用接口,获取后端传来的支付地址
+//   // 写undefined是因为微信支付是0,如果写成!paymentMethod.value有可能 也符合
+//   if (paymentMethod.value === undefined) return showToast('请选择支付方式')
+//   if (orderId.value) {
+//     showLoadingToast('支付中..')
+//     //  自测时，传值：http://localhost:端口号/+回调页面，
+//     // vue版本测试环境，传值：http://测试环境域名/+回调页面，
+//     // 用于决定付款成功后，回调地址是本地还是测试环境地址
+//     const res = await getConsultOrderPayUrl({
+//       paymentMethod: paymentMethod.value,
+//       orderId: orderId.value,
+//       payCallback: 'http://localhost:5173/room'
+//     })
+//     // 请求接口成功后,后端给我们一个支付地址,不是我们自己的路由页面,所以用window.location.href
+//     window.location.href = res.data.payUrl
+//     // 买家账号：jfjbwb4477@sandbox.com
+//     // 登录密码：111111
+//     // 支付密码：111111
+//   }
+// }
 
 // 刷新页面的时候，判断是否问诊记录是否存在，不存在就alert提示，确认之后回到首页
 // 如果没有了问诊信息(就是已经生成了订单,本地清空了)
 type Key = keyof PartialConsult
 onMounted(() => {
   // !store.consult.type || !store.consult.illnessType|| ...这样需要把里面所有的key写出来麻烦
-  // Key[]长这样 ['type', 'illnessType', 'depId', 'illnessDesc', 'illnessTime', 'consultFlag', 'patientId']
+  // Key[]长这样['type', 'illnessType', 'depId', 'illnessDesc', 'illnessTime', 'consultFlag', 'patientId']
   const validKeys: Key[] = [
     'type',
     'illnessType',
@@ -197,9 +188,7 @@ onMounted(() => {
     </van-cell-group>
     <div
       class="pay-schema animate__animated"
-      :class="{
-        animate__shakeX: shakeX
-      }"
+      :class="{ animate__shakeX: shakeX }"
     >
       <van-checkbox v-model="agree"
         >我已同意 <span class="text">支付协议</span></van-checkbox
@@ -214,48 +203,14 @@ onMounted(() => {
       text-align="left"
       @submit="onSubmit"
     />
-    <!-- 支付抽屉 动作面板 -->
-    <!-- checked是复选框的选中效果，true就是选中，他并不和数据挂钩，想和数据挂钩需要用v-model='''
-    这里之所以能切换数据 是因为 <van-cell title="支付宝支付" @click="paymentMethod = 1"></van-cell> -->
-    <!--  :close-on-click-overlay="false"是否在点击遮罩层 时关闭 -->
-    <!--   @click-overlay点击遮罩层做的事情 -->
-    <!--  :closeable="false"不显示× -->
-    <!-- :before-close关闭前的回调函数，返回 false 可阻止关闭，支持返回 Promise -->
-    <!--  :close-on-popstate="false"历史回退时候不让抽屉关 -->
-    <van-action-sheet
-      :close-on-popstate="false"
-      :closeable="false"
-      :before-close="onCancel"
+    <!-- 支付抽屉 组件 -->
+    <cp-pay-sheet
+      :actualPayment="payInfo.actualPayment"
       v-model:show="show"
-      title="选择支付方式"
-    >
-      <div class="pay-type">
-        <p class="amount">￥{{ payInfo.actualPayment.toFixed(2) }}</p>
-        <van-cell-group>
-          <van-cell title="微信支付" @click="paymentMethod = 0">
-            <template #icon><cp-icon name="consult-wechat" /></template>
-            <template #extra
-              ><van-checkbox
-                :checked="paymentMethod === 0"
-                @click="paymentMethod = 0"
-            /></template>
-          </van-cell>
-          <van-cell title="支付宝支付" @click="paymentMethod = 1">
-            <template #icon><cp-icon name="consult-alipay" /></template>
-            <template #extra
-              ><van-checkbox
-                :checked="paymentMethod === 1"
-                @click="paymentMethod = 1"
-            /></template>
-          </van-cell>
-        </van-cell-group>
-        <div class="btn">
-          <van-button @click="gotoPay" type="primary" round block
-            >立即支付</van-button
-          >
-        </div>
-      </div>
-    </van-action-sheet>
+      :onCancel="onCancel"
+      :orderId="orderId"
+      payCallback="/room"
+    ></cp-pay-sheet>
   </div>
   <!-- 骨架屏 -->
   <div v-else>
@@ -270,16 +225,19 @@ onMounted(() => {
 .consult-pay-page {
   padding: 46px 0 50px 0;
 }
+
 .pay-info {
   display: flex;
   padding: 15px;
   flex-wrap: wrap;
   align-items: center;
+
   .tit {
     width: 100%;
     font-size: 16px;
     margin-bottom: 10px;
   }
+
   .img {
     margin-right: 10px;
     width: 38px;
@@ -287,11 +245,14 @@ onMounted(() => {
     border-radius: 4px;
     overflow: hidden;
   }
+
   .desc {
     flex: 1;
+
     > span {
       display: block;
       color: var(--cp-tag);
+
       &:first-child {
         font-size: 16px;
         color: var(--cp-text2);
@@ -299,36 +260,43 @@ onMounted(() => {
     }
   }
 }
+
 .pay-price {
   ::v-deep() {
     .vam-cell__title {
       font-size: 16px;
     }
+
     .van-cell__value {
       font-size: 16px;
       color: var(--cp-price);
     }
   }
 }
+
 .pay-space {
   height: 12px;
   background-color: var(--cp-bg);
 }
+
 .pay-schema {
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
+
   .text {
     color: var(--cp-primary);
   }
 }
+
 ::v-deep() {
   .van-submit-bar__button {
     font-weight: normal;
     width: 160px;
   }
 }
+
 .pay-type {
   .amount {
     padding: 20px;
@@ -336,15 +304,19 @@ onMounted(() => {
     font-size: 16px;
     font-weight: bold;
   }
+
   .btn {
     padding: 15px;
   }
+
   .van-cell {
     align-items: center;
+
     .cp-icon {
       margin-right: 10px;
       font-size: 18px;
     }
+
     .van-checkbox :deep(.van-checkbox__icon) {
       font-size: 16px;
     }

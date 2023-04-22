@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
 import { showToast, type FormInstance } from 'vant' //在template不用导入 已经自动导入了，在js中要导入
+import { loginByPassword, sendMobileCode, loginByMobile } from '@/api/user'
+import { useUserStore } from '@/stores'
+import { useRoute, useRouter } from 'vue-router'
 // 使用了 unplugin-vue-components 默认 src/compoenents 自动导入注册组件
+// 4.表单校验
+// 单个校验
+import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 //1.默认不勾选同意
 const agree = ref(false)
 // 2.睁眼闭眼
@@ -13,16 +19,11 @@ const showEyeOpen = ref(false)
 const mobile = ref('')
 const password = ref('')
 const code = ref('') //验证码
-// 4.表单校验
-// 单个校验
-import { mobileRules, passwordRules, codeRules } from '@/utils/rules'
 
 // 整体校验，点击按钮，按钮type是submit类型就会自动做整体校验
 // 设置button组件为原生 submit 类型按钮
 // 5.点击登录
-import { loginByPassword, sendMobileCode, loginByMobile } from '@/api/user'
-import { useUserStore } from '@/stores'
-import { useRoute, useRouter } from 'vue-router'
+
 const store = useUserStore()
 const router = useRouter()
 const route = useRoute()
@@ -46,6 +47,7 @@ const login = async () => {
     : await loginByMobile(mobile.value, code.value)
   //存入pinia
   store.setUser(res.data)
+
   // 如果有回跳地址就进行回跳，没有跳转到个人中心
   router.replace((route.query.returnUrl as string) || '/user')
   showToast('登陆成功')
@@ -80,6 +82,11 @@ const sendCode = async () => {
 onUnmounted(() => {
   clearInterval(timeId)
 })
+// QQurl
+const enCodeUrl = encodeURIComponent(
+  import.meta.env.VITE_APP_CALLBACK + '/login/callback'
+)
+const qqUrl = `https://graph.qq.com/oauth2.0/authorize?client_id=102015968&response_type=token&scope=all&redirect_uri=${enCodeUrl}`
 </script>
 
 <template>
@@ -162,8 +169,11 @@ onUnmounted(() => {
     <!-- 底部 -->
     <div class="login-other">
       <van-divider>第三方登录</van-divider>
+      <!-- <div id="qq"></div> -->
       <div class="icon">
-        <img src="@/assets/qq.svg" alt="" />
+        <a @click="store.setReturnUrl($route.query.returnUrl)" :href="qqUrl">
+          <img src="@/assets/qq.svg" alt="" />
+        </a>
       </div>
     </div>
   </div>

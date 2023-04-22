@@ -9,6 +9,8 @@ const active = ref(0)
 const allDep = ref<TopDep[]>([])
 onMounted(async () => {
   const res = await getAllDep()
+  // console.log(res.data, '科室')
+
   allDep.value = res.data
 })
 // 二级科室
